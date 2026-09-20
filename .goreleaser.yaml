@@ -1,0 +1,94 @@
+---
+version: 2
+# Set project_name for correct asset naming (checksums, sig)
+project_name: terraform-provider-awstagging
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: terraform-provider-awstagging
+    env:
+      - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      # Ensure main.version is defined in your main package
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
+    goos:
+      - freebsd
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      # - '386' # Generally not needed for registry
+      # - arm   # Generally not needed for registry
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: windows
+        goarch: 'arm'
+      - goos: windows
+        goarch: 'arm64'
+    # Terraform providers require binary names to follow this specific convention:
+    # terraform-provider-<NAME>_vX.Y.Z
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - id: terraform-provider-awstagging # Match build id
+    ids: # Reference build id
+      - terraform-provider-awstagging
+    # Archive name template (zip filename) - can be different if desired
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    formats:
+      - zip # Explicitly use zip
+    wrap_in_directory: false # Binary at the root of the zip
+    files:
+      - none* # Only include the binary
+
+# Generates the checksum file required by Terraform
+checksum:
+  # Correct checksum file name format: <PROJECT_NAME>_<VERSION>_SHA256SUMS
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - 'merge conflict'
+
+# Signs the checksum file using your GPG key so the Terraform Registry can authenticate builds
+# signs:
+#   - artifacts: checksum
+#     args:
+#       # Required flags for non-interactive GPG signing in CI environments
+#       - "--batch"
+#       - "--local-user"
+#       - "{{ .Env.GPG_FINGERPRINT }}"
+#       - "--output"
+#       - "${signature}"
+#       - "--detach-sign"
+#       - "${artifact}"
+#     stdin: "{{ .Env.GPG_PASSPHRASE }}"
+
+
+
+release:
+  github:
+    owner: danieleborsaro
+    name: terraform-provider-awstagging
+  draft: false
+  prerelease: auto
+
+  # Generates provider metadata required by Terraform 0.14+
+  extra_files:
+    - glob: "terraform-registry-manifest.json"
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
