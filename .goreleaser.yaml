@@ -66,19 +66,18 @@ changelog:
       - 'merge conflict'
 
 # Signs the checksum file using your GPG key so the Terraform Registry can authenticate builds
-# signs:
-#   - artifacts: checksum
-#     args:
-#       # Required flags for non-interactive GPG signing in CI environments
-#       - "--batch"
-#       - "--local-user"
-#       - "{{ .Env.GPG_FINGERPRINT }}"
-#       - "--output"
-#       - "${signature}"
-#       - "--detach-sign"
-#       - "${artifact}"
-#     stdin: "{{ .Env.GPG_PASSPHRASE }}"
-
+signs:
+  - artifacts: checksum
+    args:
+      # Required flags for non-interactive GPG signing in CI environments
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+    stdin: "{{ .Env.GPG_PASSPHRASE }}"
 
 
 release:
