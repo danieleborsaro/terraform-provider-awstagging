@@ -72,6 +72,10 @@ signs:
     cmd: gpg
     args:
       - "--batch"
+      - "--no-tty"
+      - "--pinentry-mode"
+      - "loopback"
+      - "--yes"
       - "--local-user"
       - "{{ .Env.GPG_FINGERPRINT }}"
       - "--output"
