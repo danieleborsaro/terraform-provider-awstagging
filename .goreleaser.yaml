@@ -67,9 +67,10 @@ changelog:
 
 # Signs the checksum file using your GPG key so the Terraform Registry can authenticate builds
 signs:
-  - artifacts: checksum
+  - id: gpg
+    signature: "${artifact}.sig"
+    cmd: gpg
     args:
-      # Required flags for non-interactive GPG signing in CI environments
       - "--batch"
       - "--local-user"
       - "{{ .Env.GPG_FINGERPRINT }}"
@@ -77,7 +78,7 @@ signs:
       - "${signature}"
       - "--detach-sign"
       - "${artifact}"
-    stdin: "{{ .Env.GPG_PASSPHRASE }}"
+    artifacts: checksum
 
 
 release:
