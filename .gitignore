@@ -1,0 +1,29 @@
+# Local .terraform directories
+**/.terraform/*
+**/.terraform.lock.hcl
+
+# .tfstate files
+**/*.tfstate
+**/*.tfstate.*
+
+# GitOps
+**/.gitops*
+**/*.tfplan
+
+# .envrc files
+.envrc
+
+# IDE
+**/.vscode
+**/.idea
+
+# macOS
+.DS_Store
+
+# golang
+dist/
+tmp/
+terraform/provider-vs-module/
+
+# Misc
+INTERNAL-NOTES.md
