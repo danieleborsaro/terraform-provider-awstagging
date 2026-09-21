@@ -6,9 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	// datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	// datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	// models "github.com/danieleborsaro/terraform-provider-awstagging/internal/shared"
-	// taggingdata "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/shared"
+	taggingcore "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/core"
+	taggingdata "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/shared"
 )
 
 type configurationDataSource struct {
@@ -27,6 +30,13 @@ func NewConfigurationDataSource() datasource.DataSource {
 
 	newDatasource.DatasourceType = "Provider Configuration"
 	// newDatasource.Tagging = tagging.GetAwsAutoscalingGroup()
+	newDatasource.Tagging = &taggingcore.Resource{
+		Properties: &taggingdata.ResourceProperties{
+			Id:   taggingdata.ResourcePropertiesId{Key: "Configuration"},
+			Tags: taggingdata.ResourcePropertiesTags{Max: 50},
+			Name: taggingdata.ResourcePropertiesName{MaxLength: 255},
+		},
+	}
 
 	return newDatasource
 }
@@ -78,6 +88,10 @@ func (d *configurationDataSource) UpdateState(ctx context.Context, state *DataSo
 	tflog.Trace(ctx, "datasource-configuration"+d.DatasourceType+" - BEGIN updating state")
 
 	//  Pass provider configuration as is
+
+	//// Unversioned, so the tags carry no hash Name: they are meant for default_tags on every resource
+	datasourceConfiguration.IsCreateBeforeDestroy = types.BoolValue(false)
+	d.TaggingDataSource.UpdateState(ctx, state, datasourceConfiguration, req, resp)
 
 	tflog.Trace(ctx, "datasource-configuration"+d.DatasourceType+" - END updating state")
 }

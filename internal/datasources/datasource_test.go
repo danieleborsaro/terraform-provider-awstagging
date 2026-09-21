@@ -109,3 +109,49 @@ func TestTaggingDataSource_MergeConfiguration(t *testing.T) {
 		}
 	})
 }
+
+func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
+	ds := NewConfigurationDataSource().(*configurationDataSource)
+	ds.providerConfiguration = &models.ProviderConfiguration{
+		Account: "123456789012",
+		AccountsCoding: map[string]models.AccountCodingConfiguration{
+			"123456789012": {Class: "production", Name: "prod", NameCanonical: "Prod", NameEncoded: "P"},
+		},
+		CompanyNameShort:      "Acme",
+		Compliance:            "internal",
+		CostCentre:            "platform",
+		InfraEnvironment:      "prod",
+		IsCreateBeforeDestroy: true,
+		Owner:                 "team@example.com",
+		ProjectNameLong:       "Example project",
+		ProjectNameShort:      "example",
+		Region:                "eu-west-1",
+		ResourceSetLong:       "Example resource set",
+		ResourceSetShort:      "example",
+		Role:                  "app",
+		TerraformModule:       "/tmp/example",
+		TerraformWorkspace:    "default",
+	}
+
+	cfg := &DataSourceModel{}
+	resp := &datasource.ReadResponse{}
+	ds.MergeConfiguration(context.Background(), cfg, datasource.ReadRequest{}, resp)
+	state := *cfg
+	ds.UpdateState(context.Background(), &state, cfg, datasource.ReadRequest{}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
+	}
+	if got := state.Tags["Acme:Business:Owner"]; got != "team@example.com" {
+		t.Fatalf("expected the common tags, got owner %q in %v", got, state.Tags)
+	}
+	if _, ok := state.Tags["Name"]; ok {
+		t.Fatalf("default tags should have no Name, got %v", state.Tags)
+	}
+	if _, ok := state.Tags["Acme:Environment:ResourceType"]; ok {
+		t.Fatalf("default tags should have no ResourceType, got %v", state.Tags)
+	}
+	if got := state.IsCreateBeforeDestroy.ValueBool(); !got {
+		t.Fatalf("is_create_before_destroy in state should keep the configured value, got %t", got)
+	}
+}
