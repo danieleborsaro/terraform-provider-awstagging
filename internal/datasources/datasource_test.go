@@ -2,6 +2,8 @@ package datasources
 
 import (
 	"context"
+	"fmt"
+	"maps"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -189,5 +191,42 @@ func TestTaggingDataSource_WarnsAboutDroppedTags(t *testing.T) {
 	}
 	if got := len(state.Tags); got != 10 {
 		t.Fatalf("expected 10 tags, got %d", got)
+	}
+}
+
+func TestConfigurationDataSource_DefaultAndResourceTagsFitTheLimit(t *testing.T) {
+	read := func(t *testing.T, ds *TaggingDataSource, update func(context.Context, *DataSourceModel, *DataSourceModel, datasource.ReadRequest, *datasource.ReadResponse)) map[string]string {
+		cfg := &DataSourceModel{}
+		resp := &datasource.ReadResponse{}
+		ds.MergeConfiguration(context.Background(), cfg, datasource.ReadRequest{}, resp)
+		state := *cfg
+		update(context.Background(), &state, cfg, datasource.ReadRequest{}, resp)
+		if resp.Diagnostics.HasError() {
+			t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
+		}
+		return state.Tags
+	}
+
+	for _, n := range []int{0, 37, 45, 48, 60} {
+		t.Run(fmt.Sprintf("%d custom tags", n), func(t *testing.T) {
+			pc := testProviderConfiguration()
+			pc.CustomTags = map[string]string{}
+			for i := range n {
+				pc.CustomTags[fmt.Sprintf("Key%02d", i)] = "v"
+			}
+
+			config := NewConfigurationDataSource().(*configurationDataSource)
+			config.providerConfiguration = pc
+			defaults := read(t, &config.TaggingDataSource, config.UpdateState)
+
+			bucket := &TaggingDataSource{DatasourceType: "test", Tagging: awsTagging.GetAwsS3Bucket(), providerConfiguration: pc}
+			resource := read(t, bucket, bucket.UpdateState)
+
+			merged := maps.Clone(defaults)
+			maps.Copy(merged, resource)
+			if len(merged) > 50 {
+				t.Fatalf("default and resource tags merge to %d tags, over the limit of 50", len(merged))
+			}
+		})
 	}
 }

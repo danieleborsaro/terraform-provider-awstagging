@@ -84,7 +84,24 @@ provider "aws" {
 }
 ```
 
-Default tags are added to each resource's own tags, and the total still has to fit the resource's tag limit. S3 objects allow only 10, which the default tags alone can exceed, so manage S3 objects through an AWS provider alias without `default_tags`.
+Default tags are added to each resource's own tags, and the total still has to fit the resource's tag limit. The `configuration` data source leaves room for each resource's `Name` and `ResourceType` within the usual limit of 50. S3 objects allow only 10, which the default tags alone can exceed, so manage S3 objects through an AWS provider alias without `default_tags`:
+
+```{hcl}
+provider "aws" {
+  alias  = "no_default_tags"
+  region = var.aws_region
+}
+
+data "awstagging_aws_s3_object" "example" {}
+
+resource "aws_s3_object" "example" {
+  provider = aws.no_default_tags
+
+  bucket = aws_s3_bucket.example.id
+  key    = "example.txt"
+  tags   = data.awstagging_aws_s3_object.example.tags
+}
+```
 
 ### 3. AWS Resources
 
@@ -266,8 +283,8 @@ The tag builder also applies AWS constraints during generation:
 
 - key length is capped at 127 characters
 - value length is capped at 255 characters
-- reserved AWS-prefixed values are handled specially
-- the final map is truncated to the maximum supported tag count for the target resource type
+- keys and values starting with `aws:`, in any case, get a `:` prefix. If both `aws:x` and `:aws:x` are set, the key as written (`:aws:x`) wins and the other is dropped
+- over the target resource type's tag limit, tags are kept in this order and the rest are dropped with a warning: `Name`, generated tags, custom tags, verbatim tags, alphabetically within each
 - any tag with an empty value is dropped before final emission
 
 This means the effective output is a normalized, provider-scoped tag map that remains AWS-safe while preserving the business, security, and operational metadata expected by the platform.
