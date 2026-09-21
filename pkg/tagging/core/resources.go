@@ -138,36 +138,14 @@ func (thisResource *Resource) Generate(ctx context.Context, config *data.InputCo
 		AwsZone:          strings.ToLower(thisResource.Configuration.AvailabilityZone),
 	}
 
-	var placementRegion data.AwsPlacemenetEntity
-	if keys.AwsRegion == "" {
-		placementRegion = data.AwsPlacemenetEntity{
-			Region:    "",
-			Direction: "",
-			Sequence:  "",
-		}
-
-	} else {
-		placementRegion = data.AwsPlacemenetEntity{
-			Region:    strings.Split(keys.AwsRegion, "-")[0],
-			Direction: strings.Split(keys.AwsRegion, "-")[1],
-			Sequence:  strings.Split(keys.AwsRegion, "-")[2],
-		}
+	placementRegion, err := parsePlacement("Region", keys.AwsRegion)
+	if err != nil {
+		return err
 	}
 
-	var placementAz data.AwsPlacemenetEntity
-	if keys.AwsZone == "" {
-		placementAz = data.AwsPlacemenetEntity{
-			Region:    "",
-			Direction: "",
-			Sequence:  "",
-		}
-
-	} else {
-		placementAz = data.AwsPlacemenetEntity{
-			Region:    strings.Split(keys.AwsZone, "-")[0],
-			Direction: strings.Split(keys.AwsZone, "-")[1],
-			Sequence:  strings.Split(keys.AwsZone, "-")[2],
-		}
+	placementAz, err := parsePlacement("Availability zone", keys.AwsZone)
+	if err != nil {
+		return err
 	}
 
 	var awsPlacements = data.AwsPlacements{
@@ -185,7 +163,13 @@ func (thisResource *Resource) Generate(ctx context.Context, config *data.InputCo
 	// }
 
 	// This is preferrable: early failure if input config is not up to date
-	accountObj := thisResource.AccountsCodingById[canonicalAccountId]
+	accountObj, ok := thisResource.AccountsCodingById[canonicalAccountId]
+	if !ok {
+		return fmt.Errorf("[ERROR] Account ID '%s' is not in accounts_coding", accountIdUnsafe)
+	}
+	if _, ok := environmentClasses[accountObj.Class]; !ok {
+		return fmt.Errorf("[ERROR] Account ID '%s' has class '%s' in accounts_coding. Use one of development, preproduction, production, management, undefined", accountIdUnsafe, accountObj.Class)
+	}
 	// resourceObj := this
 
 	// We have both custom_name and custom_name_prefix, but want to use only one
@@ -296,4 +280,21 @@ func (thisResource *Resource) GetTags() map[string]string {
 
 func (thisResource *Resource) GetTagsAsMap() []map[string]string {
 	return thisResource.TagsAsMap
+}
+
+func parsePlacement(label string, value string) (data.AwsPlacemenetEntity, error) {
+	if value == "" {
+		return data.AwsPlacemenetEntity{}, nil
+	}
+
+	parts := strings.Split(value, "-")
+	if len(parts) < 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+		return data.AwsPlacemenetEntity{}, fmt.Errorf("[ERROR] %s '%s' is not in the form eu-west-1", label, value)
+	}
+
+	return data.AwsPlacemenetEntity{
+		Region:    parts[0],
+		Direction: parts[1],
+		Sequence:  parts[2],
+	}, nil
 }
