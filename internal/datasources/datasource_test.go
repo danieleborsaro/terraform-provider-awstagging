@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	models "github.com/danieleborsaro/terraform-provider-awstagging/internal/shared"
+	awsTagging "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/aws"
 )
 
 func TestTaggingDataSource_MergeConfiguration(t *testing.T) {
@@ -110,9 +111,8 @@ func TestTaggingDataSource_MergeConfiguration(t *testing.T) {
 	})
 }
 
-func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
-	ds := NewConfigurationDataSource().(*configurationDataSource)
-	ds.providerConfiguration = &models.ProviderConfiguration{
+func testProviderConfiguration() *models.ProviderConfiguration {
+	return &models.ProviderConfiguration{
 		Account: "123456789012",
 		AccountsCoding: map[string]models.AccountCodingConfiguration{
 			"123456789012": {Class: "production", Name: "prod", NameCanonical: "Prod", NameEncoded: "P"},
@@ -132,6 +132,11 @@ func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
 		TerraformModule:       "/tmp/example",
 		TerraformWorkspace:    "default",
 	}
+}
+
+func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
+	ds := NewConfigurationDataSource().(*configurationDataSource)
+	ds.providerConfiguration = testProviderConfiguration()
 
 	for name, set := range map[string]func(*DataSourceModel){
 		"no name settings":   func(*DataSourceModel) {},
@@ -162,5 +167,27 @@ func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
 				t.Fatalf("is_create_before_destroy in state should keep the configured value, got %t", got)
 			}
 		})
+	}
+}
+
+func TestTaggingDataSource_WarnsAboutDroppedTags(t *testing.T) {
+	pc := testProviderConfiguration()
+	pc.CustomTagsVerbatim = map[string]string{"Extra1": "1", "Extra2": "2", "Extra3": "3", "Extra4": "4", "Extra5": "5", "Extra6": "6", "Extra7": "7", "Extra8": "8"}
+	ds := &TaggingDataSource{DatasourceType: "test", Tagging: awsTagging.GetAwsS3Object(), providerConfiguration: pc}
+
+	cfg := &DataSourceModel{}
+	resp := &datasource.ReadResponse{}
+	ds.MergeConfiguration(context.Background(), cfg, datasource.ReadRequest{}, resp)
+	state := *cfg
+	ds.UpdateState(context.Background(), &state, cfg, datasource.ReadRequest{}, resp)
+
+	if resp.Diagnostics.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
+	}
+	if got := resp.Diagnostics.WarningsCount(); got != 1 {
+		t.Fatalf("expected one warning about dropped tags, got %d: %v", got, resp.Diagnostics)
+	}
+	if got := len(state.Tags); got != 10 {
+		t.Fatalf("expected 10 tags, got %d", got)
 	}
 }

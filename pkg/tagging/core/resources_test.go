@@ -2,6 +2,7 @@ package tagging_test
 
 import (
 	"context"
+	"maps"
 	"strings"
 	"testing"
 
@@ -202,5 +203,40 @@ func TestResourceGenerate_InvalidConfigurationIsAnError(t *testing.T) {
 				t.Fatal("expected an error, got none")
 			}
 		})
+	}
+}
+
+func TestResourceGenerate_TagLimitDropsInFixedOrder(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTags = map[string]string{"Key1": "1", "Key2": "2", "Key3": "3", "Key4": "4", "Key5": "5", "Key6": "6"}
+	cfg.CustomTagsVerbatim = map[string]string{"Extra1": "1", "Extra2": "2", "Extra3": "3"}
+
+	var first map[string]string
+	for range 50 {
+		res := awsTagging.GetAwsS3Object()
+		if err := res.Generate(context.Background(), cfg); err != nil {
+			t.Fatalf("unexpected generation error: %v", err)
+		}
+
+		if first == nil {
+			first = res.GetTags()
+			if got := strings.Join(res.GetDroppedTags(), ","); got != "Foo:Custom:Key6,Extra1,Extra2,Extra3" {
+				t.Fatalf("unexpected dropped tags: %s", got)
+			}
+			continue
+		}
+
+		if !maps.Equal(first, res.GetTags()) {
+			t.Fatalf("tags differ between runs: %v and %v", first, res.GetTags())
+		}
+	}
+
+	if len(first) != 10 {
+		t.Fatalf("expected 10 tags, got %d: %v", len(first), first)
+	}
+	for _, k := range []string{"Name", "Foo:Business:Owner", "Foo:Custom:Key1", "Foo:Custom:Key5"} {
+		if _, ok := first[k]; !ok {
+			t.Fatalf("expected %s to be kept, got %v", k, first)
+		}
 	}
 }

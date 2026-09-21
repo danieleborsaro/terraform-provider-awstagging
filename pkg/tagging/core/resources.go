@@ -19,6 +19,7 @@ type ResourceInterface interface {
 	GetName() data.Name
 	GetTags() map[string]string
 	GetTagsAsMap() []map[string]string
+	GetDroppedTags() []string
 	GetType() data.Type
 }
 
@@ -29,6 +30,7 @@ type Resource struct {
 	SanitisedConfiguration *data.SanitisedConfiguration
 	Tags                   map[string]string
 	TagsAsMap              []map[string]string
+	DroppedTags            []string
 	Type                   data.Type
 
 	AccountsCodingById map[string]data.AccountCodingConfiguration
@@ -258,6 +260,7 @@ func (thisResource *Resource) Generate(ctx context.Context, config *data.InputCo
 
 	thisResource.Tags = tagger.Tags
 	thisResource.TagsAsMap = tagger.TagsAsMap
+	thisResource.DroppedTags = tagger.DroppedTags
 
 	tflog.Debug(ctx, "resources - configuration generated")
 
@@ -280,6 +283,10 @@ func (thisResource *Resource) GetTags() map[string]string {
 
 func (thisResource *Resource) GetTagsAsMap() []map[string]string {
 	return thisResource.TagsAsMap
+}
+
+func (thisResource *Resource) GetDroppedTags() []string {
+	return thisResource.DroppedTags
 }
 
 func parsePlacement(label string, value string) (data.AwsPlacemenetEntity, error) {

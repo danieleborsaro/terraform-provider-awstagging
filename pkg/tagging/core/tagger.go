@@ -52,6 +52,7 @@ type Tagger struct {
 	resourceType           data.Type
 	Tags                   map[string]string
 	TagsAsMap              []map[string]string
+	DroppedTags            []string
 }
 
 func (thisResource *Tagger) init(properties *data.ResourceProperties, config *data.InputConfiguration, sanitisedConfig *data.SanitisedConfiguration, resourceName data.Name, resourceType data.Type) {
@@ -211,14 +212,38 @@ func (thisResource *Tagger) generateTags(ctx context.Context) {
 	}
 
 	//// This is quite rough: just take the first n tags off the ordered list of tag names... (i.e. S3 objects accept max 10 tags)
-	allTagsMaxNumber := map[string]string{}
-	howManyTags := min(uint(len(allTagsMaxLength)), thisResource.properties.Tags.Max)
-	var counted uint = 0
+	generatedPrefix := caser.String(thisResource.configuration.CompanyNameShort + thisResource.sanitisedConfiguration.Separators.TagComponent)
+	customPrefix := generatedPrefix + thisResource.sanitisedConfiguration.Constraints.CustomTagSection + thisResource.sanitisedConfiguration.Separators.TagComponent
+	rank := func(k string) int {
+		switch {
+		case k == thisResource.sanitisedConfiguration.Constraints.NameTagKey:
+			return 0
+		case strings.HasPrefix(k, customPrefix):
+			return 2
+		case strings.HasPrefix(k, generatedPrefix):
+			return 1
+		default:
+			return 3
+		}
+	}
+
+	orderedKeys := make([]string, 0, len(allTagsMaxLength))
 	for k := range allTagsMaxLength {
-		allTagsMaxNumber[k] = allTagsMaxLength[k]
-		counted++
-		if counted >= howManyTags {
-			break
+		orderedKeys = append(orderedKeys, k)
+	}
+	sort.Slice(orderedKeys, func(i, j int) bool {
+		if rank(orderedKeys[i]) != rank(orderedKeys[j]) {
+			return rank(orderedKeys[i]) < rank(orderedKeys[j])
+		}
+		return orderedKeys[i] < orderedKeys[j]
+	})
+
+	allTagsMaxNumber := map[string]string{}
+	for i, k := range orderedKeys {
+		if uint(i) < thisResource.properties.Tags.Max {
+			allTagsMaxNumber[k] = allTagsMaxLength[k]
+		} else {
+			thisResource.DroppedTags = append(thisResource.DroppedTags, k)
 		}
 	}
 
