@@ -196,9 +196,9 @@ func (thisResource *Tagger) generateTags(ctx context.Context) {
 	//// NB: see https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html
 	allTagsRestrictedPrefixes := map[string]string{}
 	for tk, tv := range allTagsUnrestricted {
-		if strings.ToLower(tv)[0:0+min(len(tv), len(thisResource.sanitisedConfiguration.Constraints.TagValueReservedPrefix))] == strings.ToLower(thisResource.sanitisedConfiguration.Constraints.TagValueReservedPrefix) {
+		if strings.HasPrefix(strings.ToLower(tk), strings.ToLower(thisResource.sanitisedConfiguration.Constraints.TagValueReservedPrefix)) {
 			//// If our tag key starts with an AWS-reserved prefix, then we need to tweak it by pre-ending a set string, e.g. aws:my-custom-tag --> :aws:my-custom-tag
-			allTagsRestrictedPrefixes[tk] = thisResource.sanitisedConfiguration.Prefixes.ReservedTagKey + "" + tv
+			allTagsRestrictedPrefixes[thisResource.sanitisedConfiguration.Prefixes.ReservedTagKey+tk] = tv
 
 		} else {
 			allTagsRestrictedPrefixes[tk] = tv

@@ -145,7 +145,7 @@ func TestResourceGenerate_VersionedNameWithCustomPrefix(t *testing.T) {
 	}
 }
 
-func TestResourceGenerate_ReservedAwsPrefixValueIsEscaped(t *testing.T) {
+func TestResourceGenerate_ReservedAwsPrefixValueIsKept(t *testing.T) {
 	cfg := standardInputConfig()
 	cfg.CustomTags = map[string]string{"Reserved": "aws:reserved"}
 
@@ -154,7 +154,53 @@ func TestResourceGenerate_ReservedAwsPrefixValueIsEscaped(t *testing.T) {
 		t.Fatalf("unexpected generation error: %v", err)
 	}
 
-	if got := res.GetTags()["Foo:Custom:Reserved"]; got != ":aws:reserved" {
-		t.Fatalf("expected reserved AWS prefix to be escaped, got %q", got)
+	if got := res.GetTags()["Foo:Custom:Reserved"]; got != "aws:reserved" {
+		t.Fatalf("expected a value starting with aws: to be kept, got %q", got)
+	}
+
+	if got := res.GetTags()["Foo:Environment:ResourceType"]; got != "AWS::ECS::Cluster" {
+		t.Fatalf("unexpected resource type tag: got %q", got)
+	}
+}
+
+func TestResourceGenerate_ReservedAwsPrefixKeyIsEscaped(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTagsVerbatim = map[string]string{"aws:reserved": "value"}
+
+	res := awsTagging.GetAwsEcsCluster()
+	if err := res.Generate(context.Background(), cfg); err != nil {
+		t.Fatalf("unexpected generation error: %v", err)
+	}
+
+	if _, ok := res.GetTags()["aws:reserved"]; ok {
+		t.Fatal("a key starting with aws: should not be passed through")
+	}
+
+	if got := res.GetTags()[":aws:reserved"]; got != "value" {
+		t.Fatalf("expected the key to be escaped, got value %q", got)
+	}
+}
+
+func TestResourceGenerate_InvalidConfigurationIsAnError(t *testing.T) {
+	cases := map[string]func(*taggingdata.InputConfiguration){
+		"account not in accounts_coding": func(c *taggingdata.InputConfiguration) { c.Account = "123456789012" },
+		"unknown account class": func(c *taggingdata.InputConfiguration) {
+			c.AccountsCoding["811635568629"] = taggingdata.AccountCodingConfiguration{Class: "staging"}
+		},
+		"region without three parts":  func(c *taggingdata.InputConfiguration) { c.Region = "euwest1" },
+		"region with an empty part":   func(c *taggingdata.InputConfiguration) { c.Region = "eu--1" },
+		"availability zone too short": func(c *taggingdata.InputConfiguration) { c.AvailabilityZone = "eu-west" },
+	}
+
+	for name, mutate := range cases {
+		t.Run(name, func(t *testing.T) {
+			cfg := standardInputConfig()
+			mutate(cfg)
+
+			res := awsTagging.GetAwsEcsCluster()
+			if err := res.Generate(context.Background(), cfg); err == nil {
+				t.Fatal("expected an error, got none")
+			}
+		})
 	}
 }
