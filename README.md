@@ -84,7 +84,7 @@ provider "aws" {
 }
 ```
 
-Default tags are added to each resource's own tags, and the total still has to fit the resource's tag limit. The `configuration` data source leaves room for each resource's `Name` and `ResourceType` within the usual limit of 50. S3 objects allow only 10, which the default tags alone can exceed, so manage S3 objects through an AWS provider alias without `default_tags`:
+Default tags are added to each resource's own tags, and the total still has to fit the resource's tag limit. The `configuration` data source leaves room for each resource's `Name` and `ResourceType` within the usual limit of 50. Anything else a resource's data source adds, such as its own `description` or `custom_tags`, also counts, and the provider doesn't check the combined total. A data source's `custom_tags` replace the provider's rather than adding to them, and the default tags put the provider's back. If your default tags are near 48, keep per-resource additions out, or use a provider alias without `default_tags` for those resources. S3 objects allow only 10, which the default tags alone can exceed, so manage S3 objects through an AWS provider alias without `default_tags`:
 
 ```{hcl}
 provider "aws" {
