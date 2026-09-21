@@ -20,7 +20,7 @@ func GetAwsNetworkAcl() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::NetworkACL",
+			Long:  "AWS::EC2::NetworkAcl",
 			Short: "nacl",
 		},
 		Tags: data.ResourcePropertiesTags{

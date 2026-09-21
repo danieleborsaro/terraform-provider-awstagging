@@ -20,7 +20,7 @@ func GetAwsIamPolicy() core.ResourceInterface {
 		AwsService: "AWS IAM",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::IAM::Policy",
+			Long:  "AWS::IAM::ManagedPolicy",
 			Short: "iampo",
 		},
 		Tags: data.ResourcePropertiesTags{

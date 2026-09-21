@@ -20,7 +20,7 @@ func GetAwsWafv2WebAclLoggingConfiguration() core.ResourceInterface {
 		AwsService: "Amazon Web Application Firewall v2",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::WAFv2::Logging Configuration",
+			Long:  "AWS::WAFv2::LoggingConfiguration",
 			Short: "waf2log",
 		},
 		Tags: data.ResourcePropertiesTags{

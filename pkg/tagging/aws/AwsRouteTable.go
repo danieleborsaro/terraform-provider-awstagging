@@ -20,7 +20,7 @@ func GetAwsRouteTable() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::RouteTable",
+			Long:  "AWS::EC2::RouteTable",
 			Short: "rt",
 		},
 		Tags: data.ResourcePropertiesTags{

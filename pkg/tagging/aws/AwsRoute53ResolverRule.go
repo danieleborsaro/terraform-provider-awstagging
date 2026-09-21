@@ -20,7 +20,7 @@ func GetAwsRoute53ResolverRule() core.ResourceInterface {
 		AwsService: "Amazon Route 53 (Supported only in the US East (N. Virginia) Region, us-east-1.) ",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Route53::ResolverRule",
+			Long:  "AWS::Route53Resolver::ResolverRule",
 			Short: "r53rr",
 		},
 		Tags: data.ResourcePropertiesTags{

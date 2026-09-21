@@ -20,7 +20,7 @@ func GetAwsCustomerGateway() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::CustomerGateway",
+			Long:  "AWS::EC2::CustomerGateway",
 			Short: "cgw",
 		},
 		Tags: data.ResourcePropertiesTags{

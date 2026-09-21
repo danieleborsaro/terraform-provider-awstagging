@@ -20,7 +20,7 @@ func GetAwsConfigConfigRule() core.ResourceInterface {
 		AwsService: "AWS Config",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Config::Rule",
+			Long:  "AWS::Config::ConfigRule",
 			Short: "cfgr",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -20,7 +20,7 @@ func GetAwsEc2ManagedPrefixList() core.ResourceInterface {
 		AwsService: "Amazon Elastic Compute Cloud (Amazon EC2)",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::EC2::ManagedPrefixList",
+			Long:  "AWS::EC2::PrefixList",
 			Short: "mpl",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -20,7 +20,7 @@ func GetAwsRdsGlobalCluster() core.ResourceInterface {
 		AwsService: "Amazon Relational Database Service (Amazon RDS)",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::RDS::DBGlobalCluster",
+			Long:  "AWS::RDS::GlobalCluster",
 			Short: "rdsgc",
 		},
 		Tags: data.ResourcePropertiesTags{

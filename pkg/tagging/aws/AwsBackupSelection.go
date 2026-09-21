@@ -20,7 +20,7 @@ func GetAwsBackupSelection() core.ResourceInterface {
 		AwsService: "AWS Backup Selection",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Backup::Selection",
+			Long:  "AWS::Backup::BackupSelection",
 			Short: "back-s",
 		},
 		Tags: data.ResourcePropertiesTags{

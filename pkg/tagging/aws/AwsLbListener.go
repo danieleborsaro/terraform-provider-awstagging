@@ -20,7 +20,7 @@ func GetAwsLbListener() core.ResourceInterface {
 		AwsService: "Elastic Load Balancing",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::ElasticLoadbalancingV2::Listener",
+			Long:  "AWS::ElasticLoadBalancingV2::Listener",
 			Short: "lbl",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -20,7 +20,7 @@ func GetAwsElasticacheCluster() core.ResourceInterface {
 		AwsService: "Amazon ElastiCache",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::ElastiCache::Cluster",
+			Long:  "AWS::ElastiCache::CacheCluster",
 			Short: "echc",
 		},
 		Tags: data.ResourcePropertiesTags{

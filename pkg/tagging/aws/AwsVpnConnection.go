@@ -20,7 +20,7 @@ func GetAwsVpnConnection() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::VPNConnection",
+			Long:  "AWS::EC2::VPNConnection",
 			Short: "vpn",
 		},
 		Tags: data.ResourcePropertiesTags{

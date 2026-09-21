@@ -20,7 +20,7 @@ func GetAwsVpcDhcpOptionsAssociation() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::DHCPOptionAssociation",
+			Long:  "AWS::EC2::VPCDHCPOptionsAssociation",
 			Short: "dhcpa",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -20,7 +20,7 @@ func GetAwsFlowLog() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::FlowLog",
+			Long:  "AWS::EC2::FlowLog",
 			Short: "fl",
 		},
 		Tags: data.ResourcePropertiesTags{

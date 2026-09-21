@@ -20,7 +20,7 @@ func GetAwsDatapipelinePipeline() core.ResourceInterface {
 		AwsService: "AWS Data Pipeline",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Data::Pipeline",
+			Long:  "AWS::DataPipeline::Pipeline",
 			Short: "dp",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -20,7 +20,7 @@ func GetAwsEc2ClientVpnEndpoint() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::VPNCustomerEndpoint",
+			Long:  "AWS::EC2::ClientVpnEndpoint",
 			Short: "vpnep",
 		},
 		Tags: data.ResourcePropertiesTags{
