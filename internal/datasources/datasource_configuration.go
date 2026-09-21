@@ -89,8 +89,10 @@ func (d *configurationDataSource) UpdateState(ctx context.Context, state *DataSo
 
 	//  Pass provider configuration as is
 
-	//// Unversioned, so the tags carry no hash Name: they are meant for default_tags on every resource
+	//// No name at all, so the tags carry no Name: they are meant for default_tags on every resource
 	datasourceConfiguration.IsCreateBeforeDestroy = types.BoolValue(false)
+	datasourceConfiguration.CustomName = types.StringNull()
+	datasourceConfiguration.CustomNamePrefix = types.StringNull()
 	d.TaggingDataSource.UpdateState(ctx, state, datasourceConfiguration, req, resp)
 
 	tflog.Trace(ctx, "datasource-configuration"+d.DatasourceType+" - END updating state")

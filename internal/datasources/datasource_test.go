@@ -133,25 +133,34 @@ func TestConfigurationDataSource_TagsForDefaultTags(t *testing.T) {
 		TerraformWorkspace:    "default",
 	}
 
-	cfg := &DataSourceModel{}
-	resp := &datasource.ReadResponse{}
-	ds.MergeConfiguration(context.Background(), cfg, datasource.ReadRequest{}, resp)
-	state := *cfg
-	ds.UpdateState(context.Background(), &state, cfg, datasource.ReadRequest{}, resp)
+	for name, set := range map[string]func(*DataSourceModel){
+		"no name settings":   func(*DataSourceModel) {},
+		"custom_name":        func(c *DataSourceModel) { c.CustomName = types.StringValue("my-name") },
+		"custom_name_prefix": func(c *DataSourceModel) { c.CustomNamePrefix = types.StringValue("my-prefix") },
+	} {
+		t.Run(name, func(t *testing.T) {
+			cfg := &DataSourceModel{}
+			set(cfg)
+			resp := &datasource.ReadResponse{}
+			ds.MergeConfiguration(context.Background(), cfg, datasource.ReadRequest{}, resp)
+			state := *cfg
+			ds.UpdateState(context.Background(), &state, cfg, datasource.ReadRequest{}, resp)
 
-	if resp.Diagnostics.HasError() {
-		t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
-	}
-	if got := state.Tags["Acme:Business:Owner"]; got != "team@example.com" {
-		t.Fatalf("expected the common tags, got owner %q in %v", got, state.Tags)
-	}
-	if _, ok := state.Tags["Name"]; ok {
-		t.Fatalf("default tags should have no Name, got %v", state.Tags)
-	}
-	if _, ok := state.Tags["Acme:Environment:ResourceType"]; ok {
-		t.Fatalf("default tags should have no ResourceType, got %v", state.Tags)
-	}
-	if got := state.IsCreateBeforeDestroy.ValueBool(); !got {
-		t.Fatalf("is_create_before_destroy in state should keep the configured value, got %t", got)
+			if resp.Diagnostics.HasError() {
+				t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
+			}
+			if got := state.Tags["Acme:Business:Owner"]; got != "team@example.com" {
+				t.Fatalf("expected the common tags, got owner %q in %v", got, state.Tags)
+			}
+			if _, ok := state.Tags["Name"]; ok {
+				t.Fatalf("default tags should have no Name, got %v", state.Tags)
+			}
+			if _, ok := state.Tags["Acme:Environment:ResourceType"]; ok {
+				t.Fatalf("default tags should have no ResourceType, got %v", state.Tags)
+			}
+			if got := state.IsCreateBeforeDestroy.ValueBool(); !got {
+				t.Fatalf("is_create_before_destroy in state should keep the configured value, got %t", got)
+			}
+		})
 	}
 }
