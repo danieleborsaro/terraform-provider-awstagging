@@ -20,7 +20,7 @@ func GetAwsSubnet() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::Subnet",
+			Long:  "AWS::EC2::Subnet",
 			Short: "subnet",
 		},
 		Tags: data.ResourcePropertiesTags{

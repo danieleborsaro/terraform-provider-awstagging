@@ -20,7 +20,7 @@ func GetAwsBackupVault() core.ResourceInterface {
 		AwsService: "AWS Backup Vault",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Backup::Vault",
+			Long:  "AWS::Backup::BackupVault",
 			Short: "back-v",
 		},
 		Tags: data.ResourcePropertiesTags{

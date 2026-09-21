@@ -20,7 +20,7 @@ func GetAwsLb() core.ResourceInterface {
 		AwsService: "Elastic Load Balancing",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::ElasticLoadbalancingV2::LoadBalancer",
+			Long:  "AWS::ElasticLoadBalancingV2::LoadBalancer",
 			Short: "lb",
 		},
 		Tags: data.ResourcePropertiesTags{

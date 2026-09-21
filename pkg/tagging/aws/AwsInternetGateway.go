@@ -20,7 +20,7 @@ func GetAwsInternetGateway() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::InternetGateway",
+			Long:  "AWS::EC2::InternetGateway",
 			Short: "igw",
 		},
 		Tags: data.ResourcePropertiesTags{

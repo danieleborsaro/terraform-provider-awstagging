@@ -20,7 +20,7 @@ func GetAwsWafWebAcl() core.ResourceInterface {
 		AwsService: "Amazon Web Application Firewall",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::WAF::ACL",
+			Long:  "AWS::WAF::WebACL",
 			Short: "wafacl",
 		},
 		Tags: data.ResourcePropertiesTags{

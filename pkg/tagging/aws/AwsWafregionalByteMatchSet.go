@@ -20,7 +20,7 @@ func GetAwsWafregionalByteMatchSet() core.ResourceInterface {
 		AwsService: "Amazon Web Application Firewall Regional",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::WAFRegional::ByteMatchRule",
+			Long:  "AWS::WAFRegional::ByteMatchSet",
 			Short: "wafrmatch",
 		},
 		Tags: data.ResourcePropertiesTags{

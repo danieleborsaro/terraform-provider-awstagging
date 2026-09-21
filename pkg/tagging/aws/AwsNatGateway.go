@@ -20,7 +20,7 @@ func GetAwsNatGateway() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::NATGateway",
+			Long:  "AWS::EC2::NatGateway",
 			Short: "ngw",
 		},
 		Tags: data.ResourcePropertiesTags{

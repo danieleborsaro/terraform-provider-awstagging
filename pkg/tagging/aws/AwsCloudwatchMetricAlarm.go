@@ -20,7 +20,7 @@ func GetAwsCloudwatchMetricAlarm() core.ResourceInterface {
 		AwsService: "Amazon CloudWatch",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::CloudWatch::MetricAlarm",
+			Long:  "AWS::CloudWatch::Alarm",
 			Short: "cwma",
 		},
 		Tags: data.ResourcePropertiesTags{

@@ -2,6 +2,7 @@ package tagging_test
 
 import (
 	"context"
+	"maps"
 	"strings"
 	"testing"
 
@@ -156,5 +157,102 @@ func TestResourceGenerate_ReservedAwsPrefixValueIsEscaped(t *testing.T) {
 
 	if got := res.GetTags()["Foo:Custom:Reserved"]; got != ":aws:reserved" {
 		t.Fatalf("expected reserved AWS prefix to be escaped, got %q", got)
+	}
+
+	if got := res.GetTags()["Foo:Environment:ResourceType"]; got != ":AWS::ECS::Cluster" {
+		t.Fatalf("unexpected resource type tag: got %q", got)
+	}
+}
+
+func TestResourceGenerate_ReservedAwsPrefixKeyIsEscaped(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTagsVerbatim = map[string]string{"aws:reserved": "value"}
+
+	res := awsTagging.GetAwsEcsCluster()
+	if err := res.Generate(context.Background(), cfg); err != nil {
+		t.Fatalf("unexpected generation error: %v", err)
+	}
+
+	if _, ok := res.GetTags()["aws:reserved"]; ok {
+		t.Fatal("a key starting with aws: should not be passed through")
+	}
+
+	if got := res.GetTags()[":aws:reserved"]; got != "value" {
+		t.Fatalf("expected the key to be escaped, got value %q", got)
+	}
+}
+
+func TestResourceGenerate_EscapedKeyCollisionKeepsKeyAsWritten(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTagsVerbatim = map[string]string{"aws:reserved": "escaped", ":aws:reserved": "as-written"}
+
+	for range 50 {
+		res := awsTagging.GetAwsEcsCluster()
+		if err := res.Generate(context.Background(), cfg); err != nil {
+			t.Fatalf("unexpected generation error: %v", err)
+		}
+
+		if got := res.GetTags()[":aws:reserved"]; got != "as-written" {
+			t.Fatalf("expected the key as written to win, got %q", got)
+		}
+	}
+}
+
+func TestResourceGenerate_InvalidConfigurationIsAnError(t *testing.T) {
+	cases := map[string]func(*taggingdata.InputConfiguration){
+		"account not in accounts_coding": func(c *taggingdata.InputConfiguration) { c.Account = "123456789012" },
+		"unknown account class": func(c *taggingdata.InputConfiguration) {
+			c.AccountsCoding["811635568629"] = taggingdata.AccountCodingConfiguration{Class: "staging"}
+		},
+		"region without three parts":  func(c *taggingdata.InputConfiguration) { c.Region = "euwest1" },
+		"region with an empty part":   func(c *taggingdata.InputConfiguration) { c.Region = "eu--1" },
+		"availability zone too short": func(c *taggingdata.InputConfiguration) { c.AvailabilityZone = "eu-west" },
+	}
+
+	for name, mutate := range cases {
+		t.Run(name, func(t *testing.T) {
+			cfg := standardInputConfig()
+			mutate(cfg)
+
+			res := awsTagging.GetAwsEcsCluster()
+			if err := res.Generate(context.Background(), cfg); err == nil {
+				t.Fatal("expected an error, got none")
+			}
+		})
+	}
+}
+
+func TestResourceGenerate_TagLimitDropsInFixedOrder(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTags = map[string]string{"Key1": "1", "Key2": "2", "Key3": "3", "Key4": "4", "Key5": "5", "Key6": "6"}
+	cfg.CustomTagsVerbatim = map[string]string{"Extra1": "1", "Extra2": "2", "Extra3": "3"}
+
+	var first map[string]string
+	for range 50 {
+		res := awsTagging.GetAwsS3Object()
+		if err := res.Generate(context.Background(), cfg); err != nil {
+			t.Fatalf("unexpected generation error: %v", err)
+		}
+
+		if first == nil {
+			first = res.GetTags()
+			if got := strings.Join(res.GetDroppedTags(), ","); got != "Foo:Custom:Key6,Extra1,Extra2,Extra3" {
+				t.Fatalf("unexpected dropped tags: %s", got)
+			}
+			continue
+		}
+
+		if !maps.Equal(first, res.GetTags()) {
+			t.Fatalf("tags differ between runs: %v and %v", first, res.GetTags())
+		}
+	}
+
+	if len(first) != 10 {
+		t.Fatalf("expected 10 tags, got %d: %v", len(first), first)
+	}
+	for _, k := range []string{"Name", "Foo:Business:Owner", "Foo:Custom:Key1", "Foo:Custom:Key5"} {
+		if _, ok := first[k]; !ok {
+			t.Fatalf("expected %s to be kept, got %v", k, first)
+		}
 	}
 }

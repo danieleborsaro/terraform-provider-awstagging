@@ -3,6 +3,7 @@ package datasources
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -378,6 +379,13 @@ func (d *TaggingDataSource) UpdateState(ctx context.Context, state *DataSourceMo
 			err.Error(),
 		)
 		return
+	}
+
+	if dropped := d.Tagging.GetDroppedTags(); len(dropped) > 0 {
+		resp.Diagnostics.AddWarning(
+			"Tags dropped",
+			fmt.Sprintf("%s allows %d tags, so these were dropped: %s", d.Tagging.GetProperties().Terraform.ResourceName, d.Tagging.GetProperties().Tags.Max, strings.Join(dropped, ", ")),
+		)
 	}
 
 	state.Tags = d.Tagging.GetTags()

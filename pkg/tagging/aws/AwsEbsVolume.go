@@ -20,7 +20,7 @@ func GetAwsEbsVolume() core.ResourceInterface {
 		AwsService: "Amazon Elastic Block Storage",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::EBS::Volume",
+			Long:  "AWS::EC2::Volume",
 			Short: "ebs",
 		},
 		Tags: data.ResourcePropertiesTags{

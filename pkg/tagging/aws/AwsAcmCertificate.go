@@ -20,7 +20,7 @@ func GetAwsAcmCertificate() core.ResourceInterface {
 		AwsService: "AWS:ACM",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::ACM::Certificate",
+			Long:  "AWS::CertificateManager::Certificate",
 			Short: "acmc",
 		},
 		Tags: data.ResourcePropertiesTags{

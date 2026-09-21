@@ -20,7 +20,7 @@ func GetAwsElasticacheSubnetGroup() core.ResourceInterface {
 		AwsService: "Amazon ElastiCache Subnet group",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::ElastiCache::Subnet group",
+			Long:  "AWS::ElastiCache::SubnetGroup",
 			Short: "ecsg",
 		},
 		Tags: data.ResourcePropertiesTags{

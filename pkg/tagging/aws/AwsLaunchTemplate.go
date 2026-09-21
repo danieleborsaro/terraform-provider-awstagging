@@ -20,7 +20,7 @@ func GetAwsLaunchTemplate() core.ResourceInterface {
 		AwsService: "AWS::AutoScaling",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::AutoScaling::Launchtemplate",
+			Long:  "AWS::EC2::LaunchTemplate",
 			Short: "asglt",
 		},
 		Tags: data.ResourcePropertiesTags{

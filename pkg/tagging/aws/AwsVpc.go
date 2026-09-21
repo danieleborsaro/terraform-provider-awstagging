@@ -20,7 +20,7 @@ func GetAwsVpc() core.ResourceInterface {
 		AwsService: "Amazon Virtual Private Cloud",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::VPC::VirtualPrivateCloud",
+			Long:  "AWS::EC2::VPC",
 			Short: "vpc",
 		},
 		Tags: data.ResourcePropertiesTags{

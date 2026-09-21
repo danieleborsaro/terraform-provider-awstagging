@@ -49,9 +49,6 @@ func (thisResource *Namer) setName(ctx context.Context) {
 	tflog.Trace(ctx, "namer - BEGIN name generation")
 
 	var account = thisResource.sanitisedConfiguration.EnvironmentClasses[thisResource.sanitisedConfiguration.AccountObject.Class].NameEncoded
-	if account == "" {
-		panic("Account ID '" + thisResource.configuration.Account + "' not recognised, aborting")
-	}
 
 	infraEnvironment := thisResource.sanitisedConfiguration.Keys.InfraEnvironment[0 : 0+min(uint(len(thisResource.sanitisedConfiguration.Keys.InfraEnvironment)), thisResource.sanitisedConfiguration.Constraints.EnvNameMaxLength)]
 	appEnvironment := thisResource.sanitisedConfiguration.Keys.AppEnvironment[0 : 0+min(uint(len(thisResource.sanitisedConfiguration.Keys.AppEnvironment)), thisResource.sanitisedConfiguration.Constraints.EnvNameMaxLength)]

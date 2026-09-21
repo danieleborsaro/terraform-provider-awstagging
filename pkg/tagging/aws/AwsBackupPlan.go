@@ -20,7 +20,7 @@ func GetAwsBackupPlan() core.ResourceInterface {
 		AwsService: "AWS Backup Plan",
 		Id: data.ResourcePropertiesId{
 			Key:   reflect.TypeOf(*this).Name(),
-			Long:  "AWS::Backup::Plan",
+			Long:  "AWS::Backup::BackupPlan",
 			Short: "back-p",
 		},
 		Tags: data.ResourcePropertiesTags{
