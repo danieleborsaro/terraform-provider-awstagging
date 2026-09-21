@@ -146,7 +146,7 @@ func TestResourceGenerate_VersionedNameWithCustomPrefix(t *testing.T) {
 	}
 }
 
-func TestResourceGenerate_ReservedAwsPrefixValueIsKept(t *testing.T) {
+func TestResourceGenerate_ReservedAwsPrefixValueIsEscaped(t *testing.T) {
 	cfg := standardInputConfig()
 	cfg.CustomTags = map[string]string{"Reserved": "aws:reserved"}
 
@@ -155,11 +155,11 @@ func TestResourceGenerate_ReservedAwsPrefixValueIsKept(t *testing.T) {
 		t.Fatalf("unexpected generation error: %v", err)
 	}
 
-	if got := res.GetTags()["Foo:Custom:Reserved"]; got != "aws:reserved" {
-		t.Fatalf("expected a value starting with aws: to be kept, got %q", got)
+	if got := res.GetTags()["Foo:Custom:Reserved"]; got != ":aws:reserved" {
+		t.Fatalf("expected reserved AWS prefix to be escaped, got %q", got)
 	}
 
-	if got := res.GetTags()["Foo:Environment:ResourceType"]; got != "AWS::ECS::Cluster" {
+	if got := res.GetTags()["Foo:Environment:ResourceType"]; got != ":AWS::ECS::Cluster" {
 		t.Fatalf("unexpected resource type tag: got %q", got)
 	}
 }
@@ -179,6 +179,22 @@ func TestResourceGenerate_ReservedAwsPrefixKeyIsEscaped(t *testing.T) {
 
 	if got := res.GetTags()[":aws:reserved"]; got != "value" {
 		t.Fatalf("expected the key to be escaped, got value %q", got)
+	}
+}
+
+func TestResourceGenerate_EscapedKeyCollisionKeepsKeyAsWritten(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.CustomTagsVerbatim = map[string]string{"aws:reserved": "escaped", ":aws:reserved": "as-written"}
+
+	for range 50 {
+		res := awsTagging.GetAwsEcsCluster()
+		if err := res.Generate(context.Background(), cfg); err != nil {
+			t.Fatalf("unexpected generation error: %v", err)
+		}
+
+		if got := res.GetTags()[":aws:reserved"]; got != "as-written" {
+			t.Fatalf("expected the key as written to win, got %q", got)
+		}
 	}
 }
 

@@ -32,9 +32,10 @@ func NewConfigurationDataSource() datasource.DataSource {
 	// newDatasource.Tagging = tagging.GetAwsAutoscalingGroup()
 	newDatasource.Tagging = &taggingcore.Resource{
 		Properties: &taggingdata.ResourceProperties{
-			Id:   taggingdata.ResourcePropertiesId{Key: "Configuration"},
-			Tags: taggingdata.ResourcePropertiesTags{Max: 50},
-			Name: taggingdata.ResourcePropertiesName{MaxLength: 255},
+			Id:        taggingdata.ResourcePropertiesId{Key: "Configuration"},
+			Tags:      taggingdata.ResourcePropertiesTags{Max: 50},
+			Name:      taggingdata.ResourcePropertiesName{MaxLength: 255},
+			Terraform: taggingdata.ResourcePropertiesTerraform{ResourceName: "configuration"},
 		},
 	}
 

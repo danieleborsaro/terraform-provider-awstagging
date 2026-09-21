@@ -84,6 +84,8 @@ provider "aws" {
 }
 ```
 
+Default tags are added to each resource's own tags, and the total still has to fit the resource's tag limit. S3 objects allow only 10, which the default tags alone can exceed, so manage S3 objects through an AWS provider alias without `default_tags`.
+
 ### 3. AWS Resources
 
 Assign tags to AWS resources:

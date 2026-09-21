@@ -196,14 +196,20 @@ func (thisResource *Tagger) generateTags(ctx context.Context) {
 	//// Apply AWS restrictions
 	//// NB: see https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html
 	allTagsRestrictedPrefixes := map[string]string{}
-	for tk, tv := range allTagsUnrestricted {
-		if strings.HasPrefix(strings.ToLower(tk), strings.ToLower(thisResource.sanitisedConfiguration.Constraints.TagValueReservedPrefix)) {
-			//// If our tag key starts with an AWS-reserved prefix, then we need to tweak it by pre-ending a set string, e.g. aws:my-custom-tag --> :aws:my-custom-tag
-			allTagsRestrictedPrefixes[thisResource.sanitisedConfiguration.Prefixes.ReservedTagKey+tk] = tv
-
-		} else {
-			allTagsRestrictedPrefixes[tk] = tv
+	escape := func(s string) string {
+		//// If our tag key starts with an AWS-reserved prefix, then we need to tweak it by pre-ending a set string, e.g. aws:my-custom-tag --> :aws:my-custom-tag
+		if strings.HasPrefix(strings.ToLower(s), strings.ToLower(thisResource.sanitisedConfiguration.Constraints.TagValueReservedPrefix)) {
+			return thisResource.sanitisedConfiguration.Prefixes.ReservedTagKey + s
 		}
+		return s
+	}
+	for tk, tv := range allTagsUnrestricted {
+		k := escape(tk)
+		if _, ok := allTagsUnrestricted[k]; ok && k != tk {
+			//// A key written as :aws:x wins over aws:x escaped to the same key
+			continue
+		}
+		allTagsRestrictedPrefixes[k] = escape(tv)
 	}
 
 	allTagsMaxLength := map[string]string{}
