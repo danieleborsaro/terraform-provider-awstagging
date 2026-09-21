@@ -91,7 +91,7 @@ func (d *configurationDataSource) UpdateState(ctx context.Context, state *DataSo
 
 	//  Pass provider configuration as is
 
-	//// No name at all, so the tags carry no Name: they are meant for default_tags on every resource
+	//// No name at all, so the tags carry no Name and can go in default_tags for every resource
 	datasourceConfiguration.IsCreateBeforeDestroy = types.BoolValue(false)
 	datasourceConfiguration.CustomName = types.StringNull()
 	datasourceConfiguration.CustomNamePrefix = types.StringNull()
