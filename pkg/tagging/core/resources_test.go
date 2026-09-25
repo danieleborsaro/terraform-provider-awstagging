@@ -9,6 +9,22 @@ import (
 	awsTagging "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/aws"
 	taggingdata "github.com/danieleborsaro/terraform-provider-awstagging/pkg/tagging/shared"
 )
+func TestResourceGenerate_LambdaFunction_NameWithinAwsLimit(t *testing.T) {
+	cfg := standardInputConfig()
+	cfg.ProjectNameShort = "aVeryLongProjectNameThatPushesTheGeneratedLambdaNameCloseToOrOverTheLimit"
+	cfg.ResourceSetShort = "aVeryLongResourceSetNameAsWell"
+
+	res := awsTagging.GetAwsLambdaFunction()
+	if err := res.Generate(context.Background(), cfg); err != nil {
+		t.Fatalf("unexpected generation error: %v", err)
+	}
+
+	const awsLambdaFunctionNameMaxLength = 64
+	if got := res.GetName().Safe; len(got) > awsLambdaFunctionNameMaxLength {
+		t.Fatalf("generated Lambda function name exceeds AWS's %d-char limit: got %d chars (%q)",
+			awsLambdaFunctionNameMaxLength, len(got), got)
+	}
+}
 
 func standardInputConfig() *taggingdata.InputConfiguration {
 	return &taggingdata.InputConfiguration{
