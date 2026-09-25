@@ -29,7 +29,7 @@ func GetAwsLambdaFunction() core.ResourceInterface {
 		},
 		Name: data.ResourcePropertiesName{
 			IsLongPrefix:        true,
-			MaxLength:           140,
+			MaxLength:           64,
 			IsLowerCase:         false,
 			IsEnforceVersioning: false,
 			Components: []string{"account",
